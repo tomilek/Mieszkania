@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <title>Mieszkania</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: #f2f2f2;
+    }
+
+    h1 {
+      text-align: center;
+    }
+
+    form {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      margin-bottom: 30px;
+    }
+
+    input, button {
+      padding: 10px;
+      margin: 5px 0;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    .listing {
+      background: white;
+      padding: 15px;
+      margin-bottom: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      display: flex;
+      gap: 15px;
+    }
+
+    .listing img {
+      width: 150px;
+      height: auto;
+      border-radius: 5px;
+      object-fit: cover;
+    }
+
+    .info {
+      flex-grow: 1;
+    }
+
+    .info p {
+      margin: 5px 0;
+    }
+
+    .delete-btn {
+      background-color: #e74c3c;
+      color: white;
+      border: none;
+      padding: 5px 10px;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Lista Mieszkań</h1>
+
+  <form id="form">
+    <input type="url" id="link" placeholder="Link do mieszkania" required>
+    <input type="url" id="zdjecie" placeholder="Link do zdjęcia" required>
+    <input type="text" id="godzina" placeholder="Godzina spotkania" required>
+    <input type="text" id="telefon" placeholder="Numer telefonu" required>
+    <input type="text" id="lokalizacja" placeholder="Lokalizacja" required>
+    <button type="submit">Dodaj mieszkanie</button>
+  </form>
+
+  <div id="lista-mieszkan"></div>
+
+  <script>
+    const listaMieszkan = document.getElementById('lista-mieszkan');
+
+    function getMieszkania() {
+      return JSON.parse(localStorage.getItem('mieszkania')) || [];
+    }
+
+    function saveMieszkania(mieszkania) {
+      localStorage.setItem('mieszkania', JSON.stringify(mieszkania));
+    }
+
+    function createListing(mieszkanie, index) {
+      const listing = document.createElement('div');
+      listing.className = 'listing';
+
+      const img = document.createElement('img');
+      img.src = mieszkanie.zdjecie;
+      img.alt = 'Zdjęcie mieszkania';
+
+      const info = document.createElement('div');
+      info.className = 'info';
+      info.innerHTML = `
+        <p><strong><a href="${mieszkanie.link}" target="_blank">${mieszkanie.link}</a></strong></p>
+        <p>🖼️ Zdjęcie: <a href="${mieszkanie.zdjecie}" target="_blank">zobacz</a></p>
+        <p>🕒 Godzina spotkania: ${mieszkanie.godzina}</p>
+        <p>📞 Telefon: ${mieszkanie.telefon}</p>
+        <p>📍 Lokalizacja: ${mieszkanie.lokalizacja}</p>
+      `;
+
+      const delBtn = document.createElement('button');
+      delBtn.textContent = 'Usuń';
+      delBtn.className = 'delete-btn';
+      delBtn.onclick = () => {
+        const mieszkania = getMieszkania();
+        mieszkania.splice(index, 1);
+        saveMieszkania(mieszkania);
+        renderMieszkania();
+      };
+
+      info.appendChild(delBtn);
+      listing.appendChild(img);
+      listing.appendChild(info);
+      listaMieszkan.appendChild(listing);
+    }
+
+    function renderMieszkania() {
+      listaMieszkan.innerHTML = '';
+      const mieszkania = getMieszkania();
+      mieszkania.forEach((m, i) => createListing(m, i));
+    }
+
+    document.getElementById('form').addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      const mieszkanie = {
+        link: document.getElementById('link').value,
+        zdjecie: document.getElementById('zdjecie').value,
+        godzina: document.getElementById('godzina').value,
+        telefon: document.getElementById('telefon').value,
+        lokalizacja: document.getElementById('lokalizacja').value
+      };
+
+      const mieszkania = getMieszkania();
+      mieszkania.push(mieszkanie);
+      saveMieszkania(mieszkania);
+      renderMieszkania();
+      e.target.reset();
+    });
+
+    renderMieszkania();
+  </script>
+
+</body>
+</html>
